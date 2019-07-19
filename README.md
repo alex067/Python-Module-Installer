@@ -20,4 +20,6 @@ For specific version changes to apply, import and from statements must contain a
 
 ```import slackclient #1.0.0```
 
+Scripts can be provided via an absolute path, or simply by name if you're running the installer script in the same folder.
 
+```python installer.py /home/bob/documents/foo.py```
