@@ -23,7 +23,6 @@ class FileTypeError(Exception):
 def install(package, failed, version=None):
     try:
         if version:
-            print(version)
             status = subprocess.check_output([sys.executable, "-m", "pip", "install", package + "==" + version], stderr=subprocess.STDOUT)
         else:
             status = subprocess.check_output([sys.executable, "-m", "pip", "install", package], stderr=subprocess.STDOUT)
