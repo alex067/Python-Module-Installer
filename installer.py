@@ -20,15 +20,19 @@ class FileTypeError(Exception):
     def __str__(self):
         return (repr(self.value))
 
-def install(package, failed):
+def install(package, failed, version=None):
     try:
-        status = subprocess.check_output([sys.executable, "-m", "pip", "install", package], stderr=subprocess.STDOUT)
+        if version:
+            print(version)
+            status = subprocess.check_output([sys.executable, "-m", "pip", "install", package + "==" + version], stderr=subprocess.STDOUT)
+        else:
+            status = subprocess.check_output([sys.executable, "-m", "pip", "install", package], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         error = e.output.decode("utf-8").lstrip()
         tmp = {package: error}
         failed.append(tmp)
     else:
-        print(Color.GREEN.value + status.decode("utf-8") + Color.END.value)
+        print(package, Color.GREEN.value + status.decode("utf-8") + Color.END.value)
 
 def read_script(script):
     failed = []
@@ -37,10 +41,19 @@ def read_script(script):
 
     with open(script, 'r') as r:
         line = r.readline()
+        version = None
         while line != '':
             if 'import' in line or 'from' in line:
+                if '#' in line:
+                    try:
+                        version = re.search('#(.+?)\n', line).group(1)
+                    except AttributeError:
+                        pass
+                    else:
+                        line = re.search('(.+?)#', line).group(1)
                 _line = line.split('import') if 'import' in line else line.split('format')
-                install(_line[1].lstrip(), failed)
+                install(_line[1].lstrip(), failed, version)
+                version = None
             '''
             for terms in line_starters:
                 if terms in line:
@@ -56,7 +69,8 @@ def read_script(script):
         print()
         for row in failed:
             for key,items in row.items():
-                print(Color.BOLD.value + key + Color.END.value + Color.RED.value + items + Color.END.value)
+                print(Color.BOLD.value + key + Color.END.value)
+                print(Color.RED.value + items + Color.END.value)
                 
 def main(argv):
    for script in argv:
